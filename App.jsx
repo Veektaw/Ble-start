@@ -33,17 +33,27 @@ const App = () => {
   const handleLocationPermission = async () => {
     if (Platform.OS === 'android' && Platform.Version >= 23) {
       try {
-        const granted = await PermissionsAndroid.request(
+        const granted = await PermissionsAndroid.requestMultiple([
           PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-        );
+          PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+          PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+          PermissionsAndroid.PERMISSIONS.BLUETOOTH_ADVERTISE,
+        ]);
 
-        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-          console.log('Location permission granted');
+        if (
+          granted['android.permission.ACCESS_FINE_LOCATION'] ===
+            PermissionsAndroid.RESULTS.GRANTED &&
+          granted['android.permission.BLUETOOTH_CONNECT'] ===
+            PermissionsAndroid.RESULTS.GRANTED &&
+          granted['android.permission.BLUETOOTH_SCAN'] ===
+            PermissionsAndroid.RESULTS.GRANTED
+        ) {
+          console.log('Location and Bluetooth permissions granted');
         } else {
-          console.log('Location permission denied');
+          console.log('Location and/or Bluetooth permissions denied');
         }
       } catch (error) {
-        console.log('Error requesting location permission:', error);
+        console.error('Error requesting permissions:', error);
       }
     }
   };
@@ -103,7 +113,7 @@ const App = () => {
 
   const scan = () => {
     if (!isScanning) {
-      BleManager.scan([], 5, true)
+      BleManager.scan([], 15, true)
         .then(() => {
           console.log('Scanning...');
           setIsScanning(true);
@@ -161,7 +171,7 @@ const App = () => {
             styles.title,
             {color: isDarkMode ? Colors.white : Colors.black},
           ]}>
-          React Native BLE Manager Tutorial
+          Please connect to your bluetooth Glucometer
         </Text>
         <TouchableOpacity
           onPress={scan}
