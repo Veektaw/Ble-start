@@ -35,6 +35,7 @@ const App = () => {
       try {
         const granted = await PermissionsAndroid.requestMultiple([
           PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+          PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
           PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
           PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
           PermissionsAndroid.PERMISSIONS.BLUETOOTH_ADVERTISE,
@@ -93,6 +94,12 @@ const App = () => {
       'BleManagerConnectPeripheral',
       peripheral => {
         console.log('BleManagerConnectPeripheral:', peripheral);
+        if (
+          peripheral.name === 'Samico GL' &&
+          peripheral.serviceUUIDs.includes('FFF0')
+        ) {
+          console.log('Connected to the desired device');
+        }
       },
     );
 
@@ -125,32 +132,32 @@ const App = () => {
   };
 
   const connect = peripheral => {
-    BleManager.createBond(peripheral.id)
+    BleManager.connect(peripheral.id)
       .then(() => {
         peripheral.connected = true;
         peripherals.set(peripheral.id, peripheral);
         let devices = Array.from(peripherals.values());
         setConnectedDevices(Array.from(devices));
         setDiscoveredDevices(Array.from(devices));
-        console.log('BLE device paired successfully');
+        console.log('Connected to the BLE device successfully');
       })
-      .catch(() => {
-        throw Error('failed to bond');
+      .catch(error => {
+        console.error('Failed to connect to the BLE device:', error);
       });
   };
 
   const disconnect = peripheral => {
-    BleManager.removeBond(peripheral.id)
+    BleManager.disconnect(peripheral.id)
       .then(() => {
         peripheral.connected = false;
         peripherals.set(peripheral.id, peripheral);
         let devices = Array.from(peripherals.values());
         setConnectedDevices(Array.from(devices));
         setDiscoveredDevices(Array.from(devices));
-        Alert.alert(`Disconnected from ${peripheral.name}`);
+        console.log('Disconnected from the BLE device successfully');
       })
-      .catch(() => {
-        throw Error('fail to remove the bond');
+      .catch(error => {
+        console.error('Failed to disconnect from the BLE device:', error);
       });
   };
 
